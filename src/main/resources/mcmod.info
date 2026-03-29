@@ -1,0 +1,16 @@
+[
+{
+  "modid": "hidechunk",
+  "name": "Hide Chunk",
+  "description": "Hides chunk terrain on the client when using the Pearl of Chunk Obfuscation.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Example"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

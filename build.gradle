@@ -1,0 +1,69 @@
+import org.gradle.api.file.DuplicatesStrategy
+
+buildscript {
+    repositories {
+        maven { url = 'https://maven.minecraftforge.net/' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath('com.anatawa12.forge:ForgeGradle:2.3-1.0.+') {
+            changing = true
+        }
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+
+// ForgeGradle 2.3 :applyBinaryPatches uses java.util.jar.Pack200, which was removed in Java 9+.
+// Gradle must run on JDK 8, or set org.gradle.java.home in gradle.properties to a JDK 8 install.
+if (JavaVersion.current() != JavaVersion.VERSION_1_8) {
+    throw new GradleException(
+            "JDK 8 required to build this project (current: " + JavaVersion.current() + "). " +
+                    "ForgeGradle 2.3 applyBinaryPatches needs java.util.jar.Pack200 (removed in Java 9+). " +
+                    "Install Temurin 8, then either: (1) set JAVA_HOME to that JDK before running gradlew.bat, " +
+                    "or (2) uncomment org.gradle.java.home in gradle.properties."
+    )
+}
+
+version = project.findProperty('mod_version') ?: '1.0.0'
+group = 'com.example.hidechunk'
+archivesBaseName = 'hidechunk'
+
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+// 14.23.5.2860 has no userdev artifact on Maven; 2847 is the newest 1.12.2 line with userdev here.
+// The built mod is still intended for Forge 1.12.2 (test with your installer build, e.g. 2860, if you use it).
+minecraft {
+    version = '1.12.2-14.23.5.2847'
+    runDir = 'run'
+    mappings = 'stable_39'
+}
+
+dependencies {
+}
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    inputs.property 'version', project.version
+    inputs.property 'mcversion', project.minecraft.version
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version': project.version, 'mcversion': project.minecraft.version
+    }
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+jar {
+    manifest {
+        attributes(
+                'FMLCorePlugin'               : 'com.example.hidechunk.core.HideChunkLoadingPlugin',
+                'FMLCorePluginContainsFMLMod' : 'true'
+        )
+    }
+}
