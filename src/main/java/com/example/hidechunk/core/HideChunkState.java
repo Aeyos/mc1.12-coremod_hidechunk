@@ -5,24 +5,60 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class HideChunkState {
 
-    private static final Set<Long> HIDDEN = ConcurrentHashMap.newKeySet();
+    private static final class ChunkKey {
+
+        final int dimension;
+        final int chunkX;
+        final int chunkZ;
+
+        ChunkKey(int dimension, int chunkX, int chunkZ) {
+            this.dimension = dimension;
+            this.chunkX = chunkX;
+            this.chunkZ = chunkZ;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof ChunkKey)) {
+                return false;
+            }
+            ChunkKey chunkKey = (ChunkKey) o;
+            return dimension == chunkKey.dimension
+                    && chunkX == chunkKey.chunkX
+                    && chunkZ == chunkKey.chunkZ;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = dimension;
+            result = 31 * result + chunkX;
+            result = 31 * result + chunkZ;
+            return result;
+        }
+    }
+
+    private static final Set<ChunkKey> HIDDEN = ConcurrentHashMap.newKeySet();
 
     private HideChunkState() {
     }
 
-    public static void hideChunk(int chunkX, int chunkZ) {
-        HIDDEN.add(toKey(chunkX, chunkZ));
+    public static void hideChunk(int dimension, int chunkX, int chunkZ) {
+        HIDDEN.add(new ChunkKey(dimension, chunkX, chunkZ));
     }
 
-    public static void showChunk(int chunkX, int chunkZ) {
-        HIDDEN.remove(toKey(chunkX, chunkZ));
+    public static void showChunk(int dimension, int chunkX, int chunkZ) {
+        HIDDEN.remove(new ChunkKey(dimension, chunkX, chunkZ));
     }
 
-    public static boolean isHidden(int chunkX, int chunkZ) {
-        return HIDDEN.contains(toKey(chunkX, chunkZ));
+    public static boolean isHidden(int dimension, int chunkX, int chunkZ) {
+        return HIDDEN.contains(new ChunkKey(dimension, chunkX, chunkZ));
     }
 
-    private static long toKey(int x, int z) {
-        return ((long) x & 4294967295L) | (((long) z & 4294967295L) << 32);
+    /** Clear all hidden columns (e.g. before client world teardown). */
+    public static void clearAll() {
+        HIDDEN.clear();
     }
 }

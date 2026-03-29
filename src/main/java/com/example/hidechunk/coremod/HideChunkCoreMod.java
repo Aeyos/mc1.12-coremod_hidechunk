@@ -1,21 +1,16 @@
-package com.example.hidechunk.core;
+package com.example.hidechunk.coremod;
 
 import java.util.Map;
 
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 
-@IFMLLoadingPlugin.Name("HideChunkCore")
 @IFMLLoadingPlugin.MCVersion("1.12.2")
-@IFMLLoadingPlugin.TransformerExclusions({
-        "com.example.hidechunk.core"
-})
-public class HideChunkLoadingPlugin implements IFMLLoadingPlugin {
+@IFMLLoadingPlugin.SortingIndex(1001)
+public class HideChunkCoreMod implements IFMLLoadingPlugin {
 
     @Override
     public String[] getASMTransformerClass() {
-        return new String[] {
-                "com.example.hidechunk.core.HideChunkTransformer"
-        };
+        return new String[] { HideChunkBlockRenderTransformer.class.getName() };
     }
 
     @Override

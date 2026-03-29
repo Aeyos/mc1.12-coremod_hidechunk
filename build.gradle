@@ -46,6 +46,14 @@ minecraft {
 dependencies {
 }
 
+jar {
+    manifest {
+        attributes([          'FMLCorePlugin': 'com.example.hidechunk.coremod.HideChunkCoreMod',
+            'FMLCorePluginContainsFMLMod': 'false',
+        ])
+    }
+}
+
 processResources {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     inputs.property 'version', project.version
@@ -59,11 +67,3 @@ processResources {
     }
 }
 
-jar {
-    manifest {
-        attributes(
-                'FMLCorePlugin'               : 'com.example.hidechunk.core.HideChunkLoadingPlugin',
-                'FMLCorePluginContainsFMLMod' : 'true'
-        )
-    }
-}

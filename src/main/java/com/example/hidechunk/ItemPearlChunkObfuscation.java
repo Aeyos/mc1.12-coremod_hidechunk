@@ -1,5 +1,6 @@
 package com.example.hidechunk;
 
+import com.example.hidechunk.client.HideChunkClientRefresh;
 import com.example.hidechunk.core.HideChunkState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
@@ -9,8 +10,10 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 
 public class ItemPearlChunkObfuscation extends Item {
 
@@ -24,23 +27,21 @@ public class ItemPearlChunkObfuscation extends Item {
         ItemStack stack = player.getHeldItem(hand);
         if (world.isRemote) {
             BlockPos pos = player.getPosition();
-            int cx = pos.getX() >> 4;
-            int cz = pos.getZ() >> 4;
+            int dimension = world.provider.getDimension();
+            ChunkPos cpos = new ChunkPos(pos);
+            Chunk chunk = world.getChunk(cpos.x, cpos.z);
+            int cx = chunk.x;
+            int cz = chunk.z;
 
-            int minX = cx << 4;
-            int minZ = cz << 4;
-            int maxX = minX + 15;
-            int maxZ = minZ + 15;
-
-            if (HideChunkState.isHidden(cx, cz)) {
-                HideChunkState.showChunk(cx, cz);
+            if (HideChunkState.isHidden(dimension, cx, cz)) {
+                HideChunkState.showChunk(dimension, cx, cz);
                 player.sendStatusMessage(new TextComponentString("Chunk visible: " + cx + ", " + cz), true);
+                HideChunkClientRefresh.scheduleColumnMeshRebuild(world, cx, cz);
             } else {
-                HideChunkState.hideChunk(cx, cz);
+                HideChunkState.hideChunk(dimension, cx, cz);
                 player.sendStatusMessage(new TextComponentString("Chunk hidden: " + cx + ", " + cz), true);
+                HideChunkClientRefresh.scheduleColumnMeshRebuild(world, cx, cz);
             }
-            // Force chunk section recompile so shouldSkipRebuild runs (skipping alone does not drop already-built meshes).
-            world.markBlockRangeForRenderUpdate(minX, 0, minZ, maxX, 255, maxZ);
         }
         return new ActionResult<>(EnumActionResult.SUCCESS, stack);
     }
