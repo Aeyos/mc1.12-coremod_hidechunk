@@ -10,7 +10,10 @@ public class HideChunkCoreMod implements IFMLLoadingPlugin {
 
     @Override
     public String[] getASMTransformerClass() {
-        return new String[] { HideChunkBlockRenderTransformer.class.getName() };
+        return new String[] {
+                HideChunkBlockRenderTransformer.class.getName(),
+                HideChunkF3AudioSwitchTransformer.class.getName()
+        };
     }
 
     @Override
