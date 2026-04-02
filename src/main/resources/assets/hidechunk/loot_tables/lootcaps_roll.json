@@ -1,0 +1,27 @@
+{
+  "pools": [
+    {
+      "name": "hidechunk_lootcaps",
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "item",
+          "name": "enderio:item_basic_capacitor",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "enderio:set_capacitor"
+            },
+            {
+              "function": "minecraft:set_data",
+              "data": {
+                "min": 3.0,
+                "max": 4.0
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
