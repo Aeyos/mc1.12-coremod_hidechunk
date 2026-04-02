@@ -1,1 +1,12 @@
 item.hidechunk.pearl_chunk_obfuscation.name=Pearl of Chunk Obfuscation
+tile.hidechunk.drawer_capacitor_wonders.name=Drawer of capacitor wonders
+item.hidechunk.drawer_capacitor_wonders.name=Drawer of capacitor wonders
+gui.hidechunk.drawer.energy=RF: %s / %s
+gui.hidechunk.drawer.sort_all=Show all — sort by base level
+gui.hidechunk.drawer.sort_by_key=Sort by this machine bonus (best first)
+commands.hidechunk.usage=/hidechunk lootcaps <qty>
+commands.hidechunk.lootcaps.usage=/hidechunk lootcaps <qty>
+commands.hidechunk.lootcaps.need_enderio=This command requires Ender IO.
+commands.hidechunk.lootcaps.player_only=Only players can run this command.
+commands.hidechunk.lootcaps.missing_table=Loot table hidechunk:lootcaps_roll is missing (check mod resources).
+commands.hidechunk.lootcaps.success=Spawned %s loot capacitor stack(s) from %s roll(s). %s dropped at your feet (inventory full).

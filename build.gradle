@@ -43,13 +43,19 @@ minecraft {
     mappings = 'stable_39'
 }
 
+repositories {
+    maven { url = 'https://cursemaven.com' }
+}
+
 dependencies {
+    // Optional compile-time EnderIO (deobf): add to libs/ or e.g.
+    // compileOnly "curse.maven:enderio-64578:CURSE_FILE_ID"
 }
 
 jar {
     manifest {
         attributes([          'FMLCorePlugin': 'com.example.hidechunk.coremod.HideChunkCoreMod',
-            'FMLCorePluginContainsFMLMod': 'false',
+            'FMLCorePluginContainsFMLMod': 'true',
         ])
     }
 }
