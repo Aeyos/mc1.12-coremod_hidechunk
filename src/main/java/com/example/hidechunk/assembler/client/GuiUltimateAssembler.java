@@ -8,14 +8,26 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class GuiUltimateAssembler extends GuiContainer {
 
-    private static final int X_SIZE = 178;
-    private static final int Y_SIZE = 270;
+    /** Vanilla double-chest GUI texture, reused so the assembler matches the chest look. */
+    private static final ResourceLocation BG_TEX =
+            new ResourceLocation("textures/gui/container/generic_54.png");
+
+    /** Source rect of one slot row in the chest texture (y=17, height=18). */
+    private static final int SLOT_ROW_SRC_Y = 17;
+    private static final int SLOT_ROW_SRC_H = 18;
+    /** Source rect of the player-inventory section (label gap + 3 rows + hotbar + border). */
+    private static final int PLAYER_SRC_Y = 125;
+    private static final int PLAYER_SRC_H = 97;
+
+    private static final int X_SIZE = 176;
+    private static final int Y_SIZE = 17 + TileUltimateAssembler.GRID_SIZE * 18 + PLAYER_SRC_H;
 
     private final TileUltimateAssembler tile;
 
@@ -41,50 +53,26 @@ public class GuiUltimateAssembler extends GuiContainer {
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         String title = I18n.format("gui.hidechunk.ultimate_assembler");
         fontRenderer.drawString(title, 8, 6, 0x404040);
-        int invY = ContainerUltimateAssembler.GUI_TOP_PADDING
-                + TileUltimateAssembler.GRID_SIZE * ContainerUltimateAssembler.SLOT_SIZE
-                + 2;
-        fontRenderer.drawString(I18n.format("container.inventory"), 8, invY + 2, 0x404040);
+        fontRenderer.drawString(I18n.format("container.inventory"), 8, ySize - 94, 0x404040);
     }
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         GlStateManager.color(1F, 1F, 1F, 1F);
+        this.mc.getTextureManager().bindTexture(BG_TEX);
         int left = guiLeft;
         int top = guiTop;
 
-        drawRect(left, top, left + xSize, top + ySize, 0xFFC6C6C6);
-        drawRect(left + 4, top + 4, left + xSize - 4, top + 16, 0xFF8B8B8B);
-
-        int gridLeft = left + ContainerUltimateAssembler.GUI_LEFT_PADDING - 1;
-        int gridTop = top + ContainerUltimateAssembler.GUI_TOP_PADDING - 1;
-        int gridSize = TileUltimateAssembler.GRID_SIZE * ContainerUltimateAssembler.SLOT_SIZE + 2;
-        drawRect(gridLeft, gridTop, gridLeft + gridSize, gridTop + gridSize, 0xFF555555);
+        // Top border + title strip (matches vanilla chest)
+        drawTexturedModalRect(left, top, 0, 0, xSize, SLOT_ROW_SRC_Y);
+        // Repeat one slot row of the chest texture for each of our 9 grid rows
         for (int row = 0; row < TileUltimateAssembler.GRID_SIZE; row++) {
-            for (int col = 0; col < TileUltimateAssembler.GRID_SIZE; col++) {
-                int sx = left + ContainerUltimateAssembler.GUI_LEFT_PADDING + col * ContainerUltimateAssembler.SLOT_SIZE;
-                int sy = top + ContainerUltimateAssembler.GUI_TOP_PADDING + row * ContainerUltimateAssembler.SLOT_SIZE;
-                drawRect(sx, sy, sx + 16, sy + 16, 0xFF8B8B8B);
-                drawRect(sx + 1, sy + 1, sx + 15, sy + 15, 0xFFF0F0F0);
-            }
+            int dy = top + SLOT_ROW_SRC_Y + row * SLOT_ROW_SRC_H;
+            drawTexturedModalRect(left, dy, 0, SLOT_ROW_SRC_Y, xSize, SLOT_ROW_SRC_H);
         }
-
-        int invY = top + ContainerUltimateAssembler.GUI_TOP_PADDING
-                + TileUltimateAssembler.GRID_SIZE * ContainerUltimateAssembler.SLOT_SIZE + 14;
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 9; col++) {
-                int sx = left + ContainerUltimateAssembler.GUI_LEFT_PADDING + col * ContainerUltimateAssembler.SLOT_SIZE;
-                int sy = invY + row * ContainerUltimateAssembler.SLOT_SIZE;
-                drawRect(sx, sy, sx + 16, sy + 16, 0xFF8B8B8B);
-                drawRect(sx + 1, sy + 1, sx + 15, sy + 15, 0xFFF0F0F0);
-            }
-        }
-        int hotbarY = invY + 3 * ContainerUltimateAssembler.SLOT_SIZE + 4;
-        for (int col = 0; col < 9; col++) {
-            int sx = left + ContainerUltimateAssembler.GUI_LEFT_PADDING + col * ContainerUltimateAssembler.SLOT_SIZE;
-            drawRect(sx, hotbarY, sx + 16, hotbarY + 16, 0xFF8B8B8B);
-            drawRect(sx + 1, hotbarY + 1, sx + 15, hotbarY + 15, 0xFFF0F0F0);
-        }
+        // Player-inventory section drawn straight from the bottom of the chest texture
+        int playerY = top + SLOT_ROW_SRC_Y + TileUltimateAssembler.GRID_SIZE * SLOT_ROW_SRC_H;
+        drawTexturedModalRect(left, playerY, 0, PLAYER_SRC_Y, xSize, PLAYER_SRC_H);
     }
 
     /** Public accessor for JEI ghost-handler hit-testing. */

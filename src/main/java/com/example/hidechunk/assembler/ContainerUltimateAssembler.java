@@ -32,7 +32,8 @@ public class ContainerUltimateAssembler extends Container {
             }
         }
 
-        int playerInvTop = GUI_TOP_PADDING + TileUltimateAssembler.GRID_SIZE * SLOT_SIZE + 14;
+        // Match the vanilla chest texture: 13px gap above main inventory (label area).
+        int playerInvTop = GUI_TOP_PADDING + TileUltimateAssembler.GRID_SIZE * SLOT_SIZE + 13;
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
                 addSlotToContainer(new Slot(
