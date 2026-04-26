@@ -47,9 +47,13 @@ repositories {
     maven { url = 'https://cursemaven.com' }
 }
 
+// Drop the following jars into ./libs/ so compileJava can resolve their symbols:
+//   - ExtendedCrafting-1.12.2-1.5.x.jar  (BlakeBr0 OR Nomifactory fork — same class layout)
+//   - jei_1.12.2-4.x.x.x.jar              (mezz/JEI for 1.12.2)
+//   - (optional) EnderIO-1.12.2-5.x.x.jar (only if you wire EnderIO compile-time hooks)
+// Both are runtime dependencies declared in mcmod.info; the JEI plugin is gated by @JEIPlugin.
 dependencies {
-    // Optional compile-time EnderIO (deobf): add to libs/ or e.g.
-    // compileOnly "curse.maven:enderio-64578:CURSE_FILE_ID"
+    compileOnly fileTree(dir: 'libs', include: ['*.jar'])
 }
 
 jar {

@@ -1,28 +1,27 @@
-package com.example.hidechunk.drawer;
+package com.example.hidechunk.assembler;
 
 import com.example.hidechunk.HideChunkMod;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 
-public class BlockDrawerCapacitor extends BlockContainer {
+public class BlockUltimateAssembler extends BlockContainer {
 
-    public BlockDrawerCapacitor() {
+    public BlockUltimateAssembler() {
         super(Material.IRON, MapColor.GRAY);
-        setTranslationKey(HideChunkMod.MODID + ".drawer_capacitor_wonders");
+        setTranslationKey(HideChunkMod.MODID + ".ultimate_assembler");
         setHardness(3.5F);
         setResistance(10F);
         setSoundType(SoundType.METAL);
@@ -32,7 +31,7 @@ public class BlockDrawerCapacitor extends BlockContainer {
     @Nullable
     @Override
     public TileEntity createNewTileEntity(World worldIn, int meta) {
-        return new TileDrawerCapacitor();
+        return new TileUltimateAssembler();
     }
 
     @Override
@@ -49,7 +48,7 @@ public class BlockDrawerCapacitor extends BlockContainer {
         if (!world.isRemote) {
             player.openGui(
                     HideChunkMod.INSTANCE,
-                    HideChunkMod.GUI_DRAWER_CAPACITOR,
+                    HideChunkMod.GUI_ULTIMATE_ASSEMBLER,
                     world,
                     pos.getX(),
                     pos.getY(),
@@ -59,32 +58,12 @@ public class BlockDrawerCapacitor extends BlockContainer {
     }
 
     @Override
-    public void breakBlock(World world, BlockPos pos, IBlockState state) {
-        TileEntity te = world.getTileEntity(pos);
-        if (te instanceof TileDrawerCapacitor && !world.isRemote) {
-            TileDrawerCapacitor drawer = (TileDrawerCapacitor) te;
-            drawer.dropAllStoredItems();
-            drawer.dropAutomationSlot();
-        }
-        super.breakBlock(world, pos, state);
-    }
-
-    @Override
     public EnumBlockRenderType getRenderType(IBlockState state) {
         return EnumBlockRenderType.MODEL;
     }
 
     @Override
     public boolean hasTileEntity(IBlockState state) {
-        return true;
-    }
-
-    @Override
-    public boolean canConnectRedstone(
-            IBlockState state,
-            IBlockAccess world,
-            BlockPos pos,
-            @Nullable EnumFacing side) {
         return true;
     }
 }

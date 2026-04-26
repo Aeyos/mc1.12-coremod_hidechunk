@@ -1,9 +1,10 @@
 item.hidechunk.pearl_chunk_obfuscation.name=Pearl of Chunk Obfuscation
-tile.hidechunk.drawer_capacitor_wonders.name=Drawer of capacitor wonders
-item.hidechunk.drawer_capacitor_wonders.name=Drawer of capacitor wonders
-gui.hidechunk.drawer.energy=RF: %s / %s
-gui.hidechunk.drawer.sort_all=Show all — sort by base level
-gui.hidechunk.drawer.sort_by_key=Sort by this machine bonus (best first)
+tile.hidechunk.ultimate_assembler.name=Ultimate Assembler
+item.hidechunk.ultimate_assembler.name=Ultimate Assembler
+gui.hidechunk.ultimate_assembler=Ultimate Assembler
+gui.hidechunk.ultimate_assembler.pattern=Pattern
+gui.hidechunk.ultimate_assembler.no_table=No Ultimate Crafting Table below
+gui.hidechunk.ultimate_assembler.no_inventory=No inventory above
 commands.hidechunk.usage=/hidechunk lootcaps <qty>
 commands.hidechunk.lootcaps.usage=/hidechunk lootcaps <qty>
 commands.hidechunk.lootcaps.need_enderio=This command requires Ender IO.

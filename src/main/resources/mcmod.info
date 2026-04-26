@@ -11,6 +11,6 @@
   "credits": "",
   "logoFile": "",
   "screenshots": [],
-  "dependencies": "required-after:forge@[14.23.5.2768,);required-after:enderio@[5.0.0,)"
+  "dependencies": "required-after:forge@[14.23.5.2768,);required-after:enderio@[5.0.0,);required-after:extendedcrafting"
 }
 ]

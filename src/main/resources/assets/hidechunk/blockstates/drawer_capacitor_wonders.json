@@ -1,9 +1,0 @@
-{
-  "forge_marker": 1,
-  "defaults": {
-    "model": "hidechunk:block/drawer_capacitor_wonders"
-  },
-  "variants": {
-    "normal": [{}]
-  }
-}
