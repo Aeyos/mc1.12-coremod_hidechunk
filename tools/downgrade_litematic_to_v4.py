@@ -31,6 +31,25 @@ DEFAULT_MC_1122_DATA_VERSION = 1343
 DEFAULT_MC_1122_JAR = Path(
     os.environ.get("APPDATA", "")
 ) / "PrismLauncher/libraries/com/mojang/minecraft/1.12.2/minecraft-1.12.2-client.jar"
+COLOR_BY_META_112 = [
+    "white",
+    "orange",
+    "magenta",
+    "light_blue",
+    "yellow",
+    "lime",
+    "pink",
+    "gray",
+    "silver",
+    "cyan",
+    "purple",
+    "blue",
+    "brown",
+    "green",
+    "red",
+    "black",
+]
+ReplacementSpec = tuple[str, dict[str, str] | None]
 
 
 def is_compound(tag: object) -> bool:
@@ -95,24 +114,115 @@ def gather_litematic_palette_entries(
     return out
 
 
+def metadata_to_properties(block_id: str, meta: int) -> dict[str, str] | None:
+    if meta < 0 or meta > 15:
+        return None
+
+    if block_id in {
+        "minecraft:wool",
+        "minecraft:stained_hardened_clay",
+        "minecraft:stained_glass",
+        "minecraft:stained_glass_pane",
+        "minecraft:carpet",
+        "minecraft:concrete",
+        "minecraft:concrete_powder",
+    }:
+        return {"color": COLOR_BY_META_112[meta]}
+
+    if block_id == "minecraft:stone":
+        variants = {
+            0: "stone",
+            1: "granite",
+            2: "smooth_granite",
+            3: "diorite",
+            4: "smooth_diorite",
+            5: "andesite",
+            6: "smooth_andesite",
+        }
+        v = variants.get(meta)
+        return {"variant": v} if v else None
+
+    if block_id == "minecraft:stonebrick":
+        variants = {0: "default", 1: "mossy", 2: "cracked", 3: "chiseled"}
+        v = variants.get(meta)
+        return {"variant": v} if v else None
+
+    return None
+
+
+def parse_replacement_spec(
+    raw_value: str,
+    *,
+    supported_blocks: set[str],
+) -> ReplacementSpec | None:
+    value = raw_value.strip()
+    if not value:
+        return None
+
+    # Convenience typo support requested by user example.
+    value = value.replace("minecraft:concrete_power", "minecraft:concrete_powder")
+
+    if "/" not in value:
+        return (value, None) if value in supported_blocks else None
+
+    block_id, meta_str = value.rsplit("/", 1)
+    if block_id not in supported_blocks:
+        return None
+    if not meta_str.isdigit():
+        return None
+    meta = int(meta_str)
+    props = metadata_to_properties(block_id, meta)
+    if props is None:
+        return None
+    return block_id, props
+
+
+def format_replacement_spec(spec: ReplacementSpec) -> str:
+    block_id, props = spec
+    if not props:
+        return block_id
+    if "color" in props and block_id in {
+        "minecraft:concrete",
+        "minecraft:concrete_powder",
+        "minecraft:wool",
+        "minecraft:stained_hardened_clay",
+        "minecraft:stained_glass",
+        "minecraft:stained_glass_pane",
+        "minecraft:carpet",
+    }:
+        color = props["color"]
+        try:
+            idx = COLOR_BY_META_112.index(color)
+            return f"{block_id}/{idx}"
+        except ValueError:
+            pass
+    return f"{block_id} {props}"
+
+
 def prompt_missing_block_mapping(
     missing_blocks: list[str],
     supported: set[str],
     default_replacement: str,
-) -> dict[str, str]:
-    mapping: dict[str, str] = {}
+) -> dict[str, ReplacementSpec]:
+    mapping: dict[str, ReplacementSpec] = {}
     stdin_is_tty = sys.stdin is not None and sys.stdin.isatty()
 
-    if default_replacement not in supported:
+    default_spec = parse_replacement_spec(
+        default_replacement, supported_blocks=supported
+    )
+    if default_spec is None:
         # Keep script usable even with odd jars; fall back to first minecraft:* block if possible.
         fallback = next((b for b in sorted(supported) if b.startswith("minecraft:")), None)
-        default_replacement = fallback or default_replacement
+        if fallback is None:
+            fallback = "minecraft:stone"
+        default_spec = (fallback, None)
+    default_hint = format_replacement_spec(default_spec)
 
     for old_block in missing_blocks:
         if not stdin_is_tty:
-            mapping[old_block] = default_replacement
+            mapping[old_block] = default_spec
             print(
-                f"[warn] non-interactive stdin: mapping {old_block} -> {default_replacement}",
+                f"[warn] non-interactive stdin: mapping {old_block} -> {default_hint}",
                 file=sys.stderr,
             )
             continue
@@ -120,17 +230,21 @@ def prompt_missing_block_mapping(
         while True:
             prompt = (
                 f"Block '{old_block}' is not available in MC 1.12. "
-                f"Replacement block id [{default_replacement}]: "
+                f"Replacement block id [{default_hint}] "
+                "(supports block/meta like minecraft:concrete_powder/2): "
             )
             user = input(prompt).strip()
             if not user:
-                user = default_replacement
-            if user in supported:
-                mapping[old_block] = user
+                mapping[old_block] = default_spec
+                break
+            parsed = parse_replacement_spec(user, supported_blocks=supported)
+            if parsed is not None:
+                mapping[old_block] = parsed
                 break
             print(
-                f"  '{user}' was not found in discovered 1.12 block IDs. "
-                "Please enter a valid block id like 'minecraft:stone'."
+                f"  '{user}' was not accepted. "
+                "Use a valid 1.12 block id (ex: minecraft:stone) "
+                "or block/meta (ex: minecraft:concrete_powder/2)."
             )
     return mapping
 
@@ -169,7 +283,16 @@ def remap_missing_palette_blocks(
             missing_sorted, supported_blocks, default_replacement
         )
     else:
-        mapping = {old: default_replacement for old in missing_sorted}
+        default_spec = parse_replacement_spec(
+            default_replacement, supported_blocks=supported_blocks
+        )
+        if default_spec is None:
+            fallback = next(
+                (b for b in sorted(supported_blocks) if b.startswith("minecraft:")),
+                "minecraft:stone",
+            )
+            default_spec = (fallback, None)
+        mapping = {old: default_spec for old in missing_sorted}
 
     replaced_count = 0
     touched_regions: set[str] = set()
@@ -178,13 +301,21 @@ def remap_missing_palette_blocks(
         if name_tag is None:
             continue
         old_block = str(name_tag)
-        new_block = mapping.get(old_block)
-        if not new_block or new_block == old_block:
+        replacement = mapping.get(old_block)
+        if not replacement:
             continue
-        entry["Name"] = nbtlib.String(new_block)
+        new_name, new_props = replacement
+        if new_name == old_block and new_props is None:
+            continue
+        entry["Name"] = nbtlib.String(new_name)
         # Strip stale properties that can be invalid for the replacement block type.
         if "Properties" in entry:
             del entry["Properties"]
+        if new_props:
+            props_tag = nbtlib.Compound()
+            for k, v in new_props.items():
+                props_tag[k] = nbtlib.String(v)
+            entry["Properties"] = props_tag
         replaced_count += 1
         touched_regions.add(region_name)
 
@@ -193,7 +324,7 @@ def remap_missing_palette_blocks(
         f"palette remap: {replaced_count} palette entries updated across {len(touched_regions)} regions",
     ]
     for old in missing_sorted:
-        changes.append(f"palette remap: {old} -> {mapping[old]}")
+        changes.append(f"palette remap: {old} -> {format_replacement_spec(mapping[old])}")
     return changes
 
 
