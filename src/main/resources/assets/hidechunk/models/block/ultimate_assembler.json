@@ -1,6 +1,8 @@
 {
-  "parent": "block/cube_all",
+  "parent": "block/cube_bottom_top",
   "textures": {
-    "all": "blocks/iron_block"
+    "top": "hidechunk:blocks/ultimate_assembler_top",
+    "bottom": "hidechunk:blocks/ultimate_assembler_bottom",
+    "side": "hidechunk:blocks/ultimate_assembler_side"
   }
 }
